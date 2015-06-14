@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/LordMonoxide/phi.svg?branch=1.2.0)](https://travis-ci.org/LordMonoxide/phi)
-[![Coverage Status](https://coveralls.io/repos/LordMonoxide/phi/badge.svg?branch=1.2.0)](https://coveralls.io/r/LordMonoxide/phi?branch=1.2.0)
-[![License](https://img.shields.io/packagist/l/LordMonoxide/phi.svg)](https://img.shields.io/packagist/l/LordMonoxide/phi.svg)
+[![Build Status](https://travis-ci.org/BapCat/Phi.svg?branch=1.0.0)](https://travis-ci.org/BapCat/Phi)
+[![Coverage Status](https://coveralls.io/repos/BapCat/Phi/badge.svg?branch=1.0.0)](https://coveralls.io/r/BapCat/Phi?branch=1.0.0)
+[![License](https://img.shields.io/packagist/l/BapCat/Phi.svg)](https://img.shields.io/packagist/l/BapCat/Phi.svg)
 
 # φhi
 An efficient, easy-to-use, open-source PHP dependency injection container, boasting a tiny footprint, powerful features, 100% unit test coverage, and awesome documentation.  Phi is compatible with PSR-0 and PSR-4 auto-loading standards, and open to collaboration from anyone who feels they can make an improvement.
@@ -11,12 +11,12 @@ An efficient, easy-to-use, open-source PHP dependency injection container, boast
 [Composer](https://getcomposer.org/) is the recommended method of installation for Phi.
 
 ```
-$ composer require lordmonoxide/phi
+$ composer require bapcat/phi
 ```
 
 ### GitHub
 
-Phi may be downloaded from [GitHub](https://github.com/LordMonoxide/phi/).
+Phi may be downloaded from [GitHub](https://github.com/BapCat/Phi/).
 
 ## Features
 Phi supports several different ways to inject dependencies, which can all be used alone or in conjunction with one another.
@@ -122,7 +122,7 @@ $foo = $phi->make('Foo', [$bar, $baz]);
 // $foo->b   == new B
 ```
 
-Parameters of the same type will be passed to the constructor in the order they are given to Phi.  If you would like to pass them in a different order, please see the section on [named injection](https://github.com/LordMonoxide/phi#named-injection).
+Parameters of the same type will be passed to the constructor in the order they are given to Phi.  If you would like to pass them in a different order, please see the section on [named injection](https://github.com/BapCat/Phi#named-injection).
 
 ### Named Injection
 In some cases, it is useful to be explicit about which parameters you are passing in.  Phi makes this easy.  Consider the class from the "Passing Parameters" section:
@@ -278,7 +278,7 @@ executed one by one in the order they were added, and the first one to return a 
 will be used. If all custom resolvers return null, Phi will resolve the binding normally.
 
 ```php
-use LordMonoxide\Phi\ResolverInterface;
+use BapCat\Phi\ResolverInterface;
 
 class CustomResolver implements ResolverInterface {
   public function make($alias, array $arguments = []) {
@@ -300,7 +300,7 @@ Another reason to use custom resolvers is to wrap other IoC containers. For exam
 
 ```php
 use Illuminate\Support\Facades\App;
-use LordMonoxide\Phi\ResolverInterface;
+use BapCat\Phi\ResolverInterface;
 
 class LaravelResolver implements ResolverInterface {
   public function make($alias, array $arguments = []) {

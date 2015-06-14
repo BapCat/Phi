@@ -1,4 +1,4 @@
-<?php namespace LordMonoxide\Phi;
+<?php namespace BapCat\Phi;
 
 /**
  * An interface for custom binding resolvers.  Resolvers

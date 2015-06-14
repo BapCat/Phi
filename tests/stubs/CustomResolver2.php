@@ -1,6 +1,6 @@
 <?php
 
-use LordMonoxide\Phi\ResolverInterface;
+use BapCat\Phi\ResolverInterface;
 
 class CustomResolver2 implements ResolverInterface {
   public function make($alias, array $arguments = []) {

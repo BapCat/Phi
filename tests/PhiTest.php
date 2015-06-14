@@ -11,7 +11,7 @@ require_once __DIR__ . '/stubs/Uninstantiable.php';
 require_once __DIR__ . '/stubs/CustomResolver.php';
 require_once __DIR__ . '/stubs/CustomResolver2.php';
 
-use LordMonoxide\Phi\Phi;
+use BapCat\Phi\Phi;
 
 class PhiTest extends PHPUnit_Framework_TestCase {
   public function testNoConstructor() {

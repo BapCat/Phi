@@ -1,4 +1,4 @@
-<?php namespace LordMonoxide\Phi;
+<?php namespace BapCat\Phi;
 
 use InvalidArgumentException;
 use ReflectionClass;
