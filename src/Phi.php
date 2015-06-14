@@ -9,23 +9,7 @@ use ReflectionClass;
 /**
  * Dependency injection manager
  */
-class Phi implements Ioc {
-  /**
-   * @var object  Singleton instance
-   */
-  private static $_instance = null;
-  
-  /**
-   * Accessor for singleton, instantiates if necessary
-   */
-  public static function instance() {
-    if(self::$_instance == null) {
-      self::$_instance = new static;
-    }
-    
-    return self::$_instance;
-  }
-  
+class Phi extends Ioc {
   /**
    * Binds a class to an alias
    * 
