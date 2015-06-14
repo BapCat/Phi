@@ -1,12 +1,15 @@
 <?php namespace BapCat\Phi;
 
+use BapCat\Interfaces\Ioc\Ioc;
+use BapCat\Interfaces\Ioc\Resolver;
+
 use InvalidArgumentException;
 use ReflectionClass;
 
 /**
  * Dependency injection manager
  */
-class Phi implements ResolverInterface {
+class Phi implements Ioc {
   /**
    * @var object  Singleton instance
    */
@@ -42,9 +45,9 @@ class Phi implements ResolverInterface {
   /**
    * Adds a custom resolver to the IoC container
    * 
-   * @param   ResolverInterface $resolver The resolver to add
+   * @param   Resolver  $resolver The resolver to add
    */
-  public function addResolver(ResolverInterface $resolver) {
+  public function addResolver(Resolver $resolver) {
     $this->_resolvers[] = $resolver;
   }
   

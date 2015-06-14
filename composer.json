@@ -12,7 +12,8 @@
     	}
     ],
     "require": {
-        "php": ">=5.4.0"
+        "php": ">=5.4.0",
+        "bapcat/interfaces": "dev-master"
     },
     "require-dev": {
         "satooshi/php-coveralls": "dev-master"
