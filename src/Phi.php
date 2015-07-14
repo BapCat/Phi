@@ -5,6 +5,7 @@ use BapCat\Interfaces\Ioc\Resolver;
 
 use InvalidArgumentException;
 use ReflectionClass;
+use ReflectionMethod;
 
 /**
  * Dependency injection manager
@@ -95,15 +96,29 @@ class Phi extends Ioc {
     }
     
     // Grab the constructor
-    $constructor = $reflector->getConstructor();
+    $method = $reflector->getConstructor();
     
     // If there's no constructor, it's easy.  Just make a new instance.
-    if(empty($constructor)) {
+    if(empty($method)) {
       return $reflector->newInstance();
     }
     
+    $values = $this->buildArguments($method, $arguments);
+    
+    // Done! Create a new instance using the values array
+    return $reflector->newInstanceArgs($values);
+  }
+  
+  public function execute($instance, $method, $arguments = []) {
+    $class = new ReflectionClass($instance);
+    $method = $class->getMethod($method);
+    $values = $this->buildArguments($method, $arguments);
+    return $method->invokeArgs($instance, $values);
+  }
+  
+  private function buildArguments(ReflectionMethod $method, $arguments = []) {
     // Grab all of the constructor's parameters
-    $parameters = $constructor->getParameters();
+    $parameters = $method->getParameters();
     $values = [];
     
     // Size array
@@ -196,8 +211,7 @@ class Phi extends Ioc {
       }
     }
     
-    // Done! Create a new instance using the values array
-    return $reflector->newInstanceArgs($values);
+    return $values;
   }
   
   /**

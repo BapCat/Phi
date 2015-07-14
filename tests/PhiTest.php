@@ -10,6 +10,7 @@ require_once __DIR__ . '/stubs/TypedConstructor.php';
 require_once __DIR__ . '/stubs/Uninstantiable.php';
 require_once __DIR__ . '/stubs/CustomResolver.php';
 require_once __DIR__ . '/stubs/CustomResolver2.php';
+require_once __DIR__ . '/stubs/Method.php';
 
 use BapCat\Phi\Phi;
 
@@ -131,6 +132,13 @@ class PhiTest extends PHPUnit_Framework_TestCase {
     $instance = Phi::instance()->make('ScalarConstructor', ['val2' => 'test1', 'val1' => 'test2']);
     $this->assertEquals('test1', $instance->getVal2());
     $this->assertEquals('test2', $instance->getVal1());
+  }
+  
+  public function testMethodInjection() {
+    $instance = Phi::instance()->make('Method');
+    Phi::instance()->execute($instance, 'test', ['asdf']);
+    $this->assertInstanceOf('A', $instance->a);
+    $this->assertEquals('asdf', $instance->b);
   }
   
   public function testCustomResolver() {
