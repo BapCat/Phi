@@ -34,7 +34,7 @@ class Phi extends Ioc {
    * @returns string          The concrete class registered to alias, or `$alias` if there is no binding
    */
   public function resolve($alias) {
-    if(array_key_exists[$alias]) {
+    if(array_key_exists($alias, $this->_map)) {
       return $this->_map[$alias];
     }
     
