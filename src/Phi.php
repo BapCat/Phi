@@ -27,6 +27,17 @@ class Phi extends Ioc {
   }
   
   /**
+   * Resolves an alias to a concrete class name
+   * 
+   * @param   string  $alias  An alias (eg. `db.helper`) to resolve back to a real class
+   * 
+   * @returns string          The concrete class registered to alias, or `$alias` if there is no binding
+   */
+  public function resolve($alias) {
+    return $this->_map[$alias];
+  }
+  
+  /**
    * Adds a custom resolver to the IoC container
    * 
    * @param   Resolver  $resolver The resolver to add
