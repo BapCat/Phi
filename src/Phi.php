@@ -119,12 +119,9 @@ class Phi extends Ioc {
   private function buildArguments(ReflectionMethod $method, $arguments = []) {
     // Grab all of the constructor's parameters
     $parameters = $method->getParameters();
-    $values = [];
     
     // Size array
-    for($i = 0; $i < count($parameters); $i++) {
-      $values[] = null;
-    }
+    $values = [];
     
     /*
      * The following is a three-step process to fill out the parameters. For example:
@@ -202,7 +199,7 @@ class Phi extends Ioc {
     
     // Step 3...
     foreach($parameters as $paramIndex => $parameter) {
-      if(!isset($values[$paramIndex])) {
+      if(!array_key_exists($paramIndex, $values)) {
         if($parameter->getClass()) {
           $values[$paramIndex] = $this->make($parameter->getClass()->getName());
         } else {
@@ -210,6 +207,8 @@ class Phi extends Ioc {
         }
       }
     }
+    
+    ksort($values);
     
     return $values;
   }
