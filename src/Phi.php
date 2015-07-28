@@ -109,14 +109,19 @@ class Phi extends Ioc {
     return $reflector->newInstanceArgs($values);
   }
   
-  public function execute($instance, $method, $arguments = []) {
+  public function execute($instance, $method, array $arguments = []) {
     $class = new ReflectionClass($instance);
     $method = $class->getMethod($method);
     $values = $this->buildArguments($method, $arguments);
-    return $method->invokeArgs($instance, $values);
+    
+    if(!$method->isStatic()) {
+        return $method->invokeArgs($instance, $values);
+    } else {
+        return $method->invokeArgs(null, $values);
+    }
   }
   
-  private function buildArguments(ReflectionMethod $method, $arguments = []) {
+  private function buildArguments(ReflectionMethod $method, array $arguments = []) {
     // Grab all of the constructor's parameters
     $parameters = $method->getParameters();
     
