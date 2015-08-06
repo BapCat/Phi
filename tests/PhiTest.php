@@ -158,7 +158,7 @@ class PhiTest extends PHPUnit_Framework_TestCase {
     $this->assertInstanceOf('NoConstructor', $instance);
   }
   
-  public function testMultipleCustomResolver() {
+  public function testMultipleCustomResolvers() {
     $phi = Phi::instance();
     $phi->addResolver(new CustomResolver());
     $phi->addResolver(new CustomResolver2());
@@ -171,5 +171,20 @@ class PhiTest extends PHPUnit_Framework_TestCase {
     
     $instance = $phi->make('NoConstructor');
     $this->assertInstanceOf('NoConstructor', $instance);
+  }
+  
+  public function testSingletons() {
+    $phi = Phi::instance();
+    
+    $phi->singleton('ThereCanBeOnlyOne', 'A');
+    
+    $a1 = $phi->make('ThereCanBeOnlyOne');
+    $a2 = $phi->make('ThereCanBeOnlyOne');
+    
+    $this->assertSame($a1, $a2);
+    
+    $a3 = $phi->make('A');
+    
+    $this->assertNotSame($a1, $a3);
   }
 }

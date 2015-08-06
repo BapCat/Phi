@@ -28,6 +28,27 @@ class Phi extends Ioc {
   }
   
   /**
+   * Binds a class to an alias as a lazy-loaded singleton
+   * 
+   * @param   string                  $alias      An alias (eg. `db.helper`), or a real class or
+   *                                              interface name to be replaced by `$binding`
+   * @param   string|callable|object  $binding    May be one of the following:
+   *                                              <ul>
+   *                                                  <li>The fully-qualified name of a class</li>
+   *                                                  <li>An instance of a class (creates a singleton)</li>
+   *                                                  <li>A callable that returns an instance of a class</li>
+   *                                              </ul>
+   */
+  public function singleton($alias, $binding) {
+    if(!is_object($binding)) {
+      $this->_singletons[$alias] = $binding;
+    } else {
+      // If they gave us an object, it's already loaded... no need to lazy-load it
+      $this->bind($alias, $binding);
+    }
+  }
+  
+  /**
    * Resolves an alias to a concrete class name
    * 
    * @param   string  $alias  An alias (eg. `db.helper`) to resolve back to a real class
@@ -37,6 +58,10 @@ class Phi extends Ioc {
   public function resolve($alias) {
     if(array_key_exists($alias, $this->_map)) {
       return $this->_map[$alias];
+    }
+    
+    if(array_key_exists($alias, $this->_singleton)) {
+      return $this->_singleton[$alias];
     }
     
     return $alias;
@@ -71,6 +96,19 @@ class Phi extends Ioc {
       }
     }
     
+    // Check to see if we have a singleton bound to this alias
+    if(array_key_exists($alias, $this->_singletons)) {
+      $binding = $this->_singletons[$alias];
+      
+      if(is_callable($binding)) {
+        $this->_map[$alias] = call_user_func_array($binding, $arguments);
+      } else {
+        $this->_map[$alias] = $this->_buildObject($binding, $arguments);
+      }
+      
+      unset($this->_singletons[$alias]);
+    }
+    
     // Check to see if we have something bound to this alias
     if(array_key_exists($alias, $this->_map)) {
       $binding = $this->_map[$alias];
@@ -87,6 +125,10 @@ class Phi extends Ioc {
       $binding = $alias;
     }
     
+    return $this->_buildObject($binding, $arguments);
+  }
+  
+  private function _buildObject($binding, array $arguments = []) {
     // This will be used to `new` up the binding
     $reflector = new ReflectionClass($binding);
     
@@ -222,6 +264,11 @@ class Phi extends Ioc {
    * @var array   An assotiative array of aliases and bindings
    */
   private $_map = [];
+  
+  /**
+   * @var array   An assotiative array of aliases and bindings to be lazy-loaded as singletons
+   */
+  private $_singletons = [];
   
   /**
    * @var array   An array of custom resolvers
