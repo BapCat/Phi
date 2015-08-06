@@ -120,6 +120,8 @@ class Phi extends Ioc {
         // If it's an object, simply return it
         return $binding;
       }
+      
+      return $this->make($binding, $arguments);
     } else {
       // If we don't have a binding, we'll just be `new`ing up the alias
       $binding = $alias;

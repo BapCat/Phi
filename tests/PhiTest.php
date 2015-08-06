@@ -187,4 +187,18 @@ class PhiTest extends PHPUnit_Framework_TestCase {
     
     $this->assertNotSame($a1, $a3);
   }
+  
+  public function testRecursiveResolution() {
+    $phi = Phi::instance();
+    
+    $phi->singleton('NoConstructor', 'NoConstructor');
+    $phi->bind('a1', 'NoConstructor');
+    $phi->bind('a2', 'a1');
+    $phi->bind('a3', 'a2');
+    
+    $a1 = $phi->make('a3');
+    $a2 = $phi->make('NoConstructor');
+    
+    $this->assertSame($a1, $a2);
+  }
 }
