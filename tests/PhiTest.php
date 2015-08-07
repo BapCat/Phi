@@ -199,6 +199,23 @@ class PhiTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals('test2', $o->getVal2());
   }
   
+  public function testClosuregleton() {
+    $phi = Phi::instance();
+    
+    $doIt = false;
+    $phi->singleton('closure', function($didItWork) use(&$doIt) {
+      if($didItWork == 'Yes it did') {
+        $doIt = true;
+      }
+      
+      return new NoConstructor;
+    }, ['Yes it did']);
+    
+    $b = $phi->make('closure');
+    
+    $this->assertTrue($doIt);
+  }
+  
   public function testRecursiveResolution() {
     $phi = Phi::instance();
     

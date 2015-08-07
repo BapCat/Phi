@@ -41,7 +41,7 @@ class Phi extends Ioc {
    * @param   array   $arguments  The arguments to pass to the binding when it is constructed
    */
   public function singleton($alias, $binding, array $arguments = []) {
-    if(!is_object($binding)) {
+    if(!is_object($binding) || is_callable($binding)) {
       $this->_singletons[$alias] = [$binding, $arguments];
     } else {
       // If they gave us an object, it's already loaded... no need to lazy-load it
