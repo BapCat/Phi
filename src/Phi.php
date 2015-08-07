@@ -38,10 +38,11 @@ class Phi extends Ioc {
    *                                                  <li>An instance of a class (creates a singleton)</li>
    *                                                  <li>A callable that returns an instance of a class</li>
    *                                              </ul>
+   * @param   array   $arguments  The arguments to pass to the binding when it is constructed
    */
-  public function singleton($alias, $binding) {
+  public function singleton($alias, $binding, array $arguments = []) {
     if(!is_object($binding)) {
-      $this->_singletons[$alias] = $binding;
+      $this->_singletons[$alias] = [$binding, $arguments];
     } else {
       // If they gave us an object, it's already loaded... no need to lazy-load it
       $this->bind($alias, $binding);
@@ -96,14 +97,14 @@ class Phi extends Ioc {
       }
     }
     
-    // Check to see if we have a singleton bound to this alias
+    // Check to see if we have a singleton for this alias
     if(array_key_exists($alias, $this->_singletons)) {
-      $binding = $this->_singletons[$alias];
+      list($binding, $args) = $this->_singletons[$alias];
       
       if(is_callable($binding)) {
-        $this->_map[$alias] = call_user_func_array($binding, $arguments);
+        $this->_map[$alias] = call_user_func_array($binding, $args);
       } else {
-        $this->_map[$alias] = $this->_buildObject($binding, $arguments);
+        $this->_map[$alias] = $this->_buildObject($binding, $args);
       }
       
       unset($this->_singletons[$alias]);
