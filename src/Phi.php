@@ -61,10 +61,6 @@ class Phi extends Ioc {
       return $this->_map[$alias];
     }
     
-    if(array_key_exists($alias, $this->_singleton)) {
-      return $this->_singleton[$alias];
-    }
-    
     return $alias;
   }
   

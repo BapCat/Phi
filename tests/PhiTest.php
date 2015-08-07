@@ -229,4 +229,25 @@ class PhiTest extends PHPUnit_Framework_TestCase {
     
     $this->assertSame($a1, $a2);
   }
+  
+  public function testSingletonWithObject() {
+    $phi = Phi::instance();
+    
+    $a1 = new NoConstructor();
+    
+    $phi->singleton('NoConstructor', $a1);
+    
+    $a2 = $phi->make('NoConstructor');
+    
+    $this->assertSame($a1, $a2);
+  }
+  
+  public function testResolve() {
+    $phi = Phi::instance();
+    
+    $phi->bind('A1', 'A2');
+    
+    $this->assertEquals('A2', $phi->resolve('A1'));
+    $this->assertEquals('NoBinding', $phi->resolve('NoBinding'));
+  }
 }
