@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/BapCat/Phi.svg?branch=1.1.0)](https://travis-ci.org/BapCat/Phi)
-[![Coverage Status](https://coveralls.io/repos/BapCat/Phi/badge.svg?branch=1.1.0)](https://coveralls.io/r/BapCat/Phi?branch=1.1.0)
+[![Build Status](https://travis-ci.org/BapCat/Phi.svg?branch=1.1.1)](https://travis-ci.org/BapCat/Phi)
+[![Coverage Status](https://coveralls.io/repos/BapCat/Phi/badge.svg?branch=1.1.1)](https://coveralls.io/r/BapCat/Phi?branch=1.1.1)
 [![License](https://img.shields.io/packagist/l/BapCat/Phi.svg)](https://img.shields.io/packagist/l/BapCat/Phi.svg)
 
 # φhi
