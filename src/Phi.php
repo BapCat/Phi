@@ -24,7 +24,7 @@ class Phi extends Ioc {
    *                                              </ul>
    */
   public function bind($alias, $binding) {
-    $this->_map[$alias] = $binding;
+    $this->map[$alias] = $binding;
   }
   
   /**
@@ -42,7 +42,7 @@ class Phi extends Ioc {
    */
   public function singleton($alias, $binding, array $arguments = []) {
     if(!is_object($binding) || is_callable($binding)) {
-      $this->_singletons[$alias] = [$binding, $arguments];
+      $this->singletons[$alias] = [$binding, $arguments];
     } else {
       // If they gave us an object, it's already loaded... no need to lazy-load it
       $this->bind($alias, $binding);
@@ -52,13 +52,13 @@ class Phi extends Ioc {
   /**
    * Resolves an alias to a concrete class name
    * 
-   * @param   string  $alias  An alias (eg. `db.helper`) to resolve back to a real class
+   * @param  string  $alias  An alias (eg. `db.helper`) to resolve back to a real class
    * 
-   * @returns string          The concrete class registered to alias, or `$alias` if there is no binding
+   * @return string  The concrete class registered to alias, or `$alias` if there is no binding
    */
   public function resolve($alias) {
-    if(array_key_exists($alias, $this->_map)) {
-      return $this->_map[$alias];
+    if(array_key_exists($alias, $this->map)) {
+      return $this->map[$alias];
     }
     
     return $alias;
@@ -67,23 +67,23 @@ class Phi extends Ioc {
   /**
    * Adds a custom resolver to the IoC container
    * 
-   * @param   Resolver  $resolver The resolver to add
+   * @param  Resolver  $resolver The resolver to add
    */
   public function addResolver(Resolver $resolver) {
-    $this->_resolvers[] = $resolver;
+    $this->resolvers[] = $resolver;
   }
   
   /**
    * Gets or creates an instance of an alias
    * 
-   * @param   string  $alias      An alias (eg. `db.helper`), or a real class or interface name
-   * @param   array   $arguments  The arguments to pass to the binding
+   * @param  string  $alias      An alias (eg. `db.helper`), or a real class or interface name
+   * @param  array   $arguments  The arguments to pass to the binding
    * 
-   * @returns object  A new instance of `$alias`'s binding, or a shared instance in the case of singletons
+   * @return object  A new instance of `$alias`'s binding, or a shared instance in the case of singletons
    */
   public function make($alias, array $arguments = []) {
     // Iterate over each resolver and see if they have a binding override
-    foreach($this->_resolvers as $resolver) {
+    foreach($this->resolvers as $resolver) {
       // Ask the resolver for the alias' binding
       $binding = $resolver->make($alias, $arguments);
       
@@ -94,21 +94,21 @@ class Phi extends Ioc {
     }
     
     // Check to see if we have a singleton for this alias
-    if(array_key_exists($alias, $this->_singletons)) {
-      list($binding, $args) = $this->_singletons[$alias];
+    if(array_key_exists($alias, $this->singletons)) {
+      list($binding, $args) = $this->singletons[$alias];
       
       if(is_callable($binding)) {
-        $this->_map[$alias] = call_user_func_array($binding, $args);
+        $this->map[$alias] = call_user_func_array($binding, $args);
       } else {
-        $this->_map[$alias] = $this->_buildObject($binding, $args);
+        $this->map[$alias] = $this->buildObject($binding, $args);
       }
       
-      unset($this->_singletons[$alias]);
+      unset($this->singletons[$alias]);
     }
     
     // Check to see if we have something bound to this alias
-    if(array_key_exists($alias, $this->_map)) {
-      $binding = $this->_map[$alias];
+    if(array_key_exists($alias, $this->map)) {
+      $binding = $this->map[$alias];
       
       if(is_callable($binding)) {
         // If it's callable, we call it and pass on our arguments
@@ -124,10 +124,18 @@ class Phi extends Ioc {
       $binding = $alias;
     }
     
-    return $this->_buildObject($binding, $arguments);
+    return $this->buildObject($binding, $arguments);
   }
   
-  private function _buildObject($binding, array $arguments = []) {
+  /**
+   * Creates an instance of a binding with a given set of arguments
+   * 
+   * @param  string        $binding    The binding to instantiate
+   * @param  array<mixed>  $arguments  The arguments to pass to the constructor
+   * 
+   * @return object  The instance that is created
+   */
+  private function buildObject($binding, array $arguments = []) {
     // This will be used to `new` up the binding
     $reflector = new ReflectionClass($binding);
     
@@ -150,6 +158,15 @@ class Phi extends Ioc {
     return $reflector->newInstanceArgs($values);
   }
   
+  /**
+   * Executes a method using dependency injection
+   * 
+   * @param  object  $instance   An instance of an object, or a class name if calling a static method
+   * @param  string  $method     The name of the method to call on the object or class
+   * @param  array   $arguments  The arguments to pass to the method
+   * 
+   * @return mixed   The return value of the called method
+   */
   public function execute($instance, $method, array $arguments = []) {
     $class = new ReflectionClass($instance);
     $method = $class->getMethod($method);
@@ -162,6 +179,14 @@ class Phi extends Ioc {
     }
   }
   
+  /**
+   * Where the magic happens.  Builds the argument list for a given method and calls it.
+   * 
+   * @param  ReflectionMethod  $method     The method to call
+   * @param  array<mixed>      $arguments  The arguments to pass to the the method
+   * 
+   * @return mixed  The return value of the method
+   */
   private function buildArguments(ReflectionMethod $method, array $arguments = []) {
     // Grab all of the constructor's parameters
     $parameters = $method->getParameters();
@@ -216,12 +241,12 @@ class Phi extends Ioc {
      */
     
     // Step 1...
-    foreach($arguments as $argIndex => $argument) {
-      if(is_string($argIndex)) {
-        foreach($parameters as $paramIndex => $parameter) {
-          if($argIndex == $parameter->getName()) {
-            $values[$paramIndex] = $argument;
-            unset($arguments[$argIndex]);
+    foreach($arguments as $arg_index => $argument) {
+      if(is_string($arg_index)) {
+        foreach($parameters as $param_index => $parameter) {
+          if($arg_index == $parameter->getName()) {
+            $values[$param_index] = $argument;
+            unset($arguments[$arg_index]);
             break;
           }
         }
@@ -229,13 +254,13 @@ class Phi extends Ioc {
     }
     
     // Step 2...
-    foreach($parameters as $paramIndex => $parameter) {
+    foreach($parameters as $param_index => $parameter) {
       if($parameter->getClass()) {
-        foreach($arguments as $argIndex => $argument) {
+        foreach($arguments as $arg_index => $argument) {
           if(is_object($argument)) {
             if($parameter->getClass()->isInstance($argument)) {
-              $values[$paramIndex] = $argument;
-              unset($arguments[$argIndex]);
+              $values[$param_index] = $argument;
+              unset($arguments[$arg_index]);
               break;
             }
           }
@@ -244,12 +269,12 @@ class Phi extends Ioc {
     }
     
     // Step 3...
-    foreach($parameters as $paramIndex => $parameter) {
-      if(!array_key_exists($paramIndex, $values)) {
+    foreach($parameters as $param_index => $parameter) {
+      if(!array_key_exists($param_index, $values)) {
         if($parameter->getClass()) {
-          $values[$paramIndex] = $this->make($parameter->getClass()->getName());
+          $values[$param_index] = $this->make($parameter->getClass()->getName());
         } else {
-          $values[$paramIndex] = array_shift($arguments);
+          $values[$param_index] = array_shift($arguments);
         }
       }
     }
@@ -260,19 +285,19 @@ class Phi extends Ioc {
   }
   
   /**
-   * @var array   An assotiative array of aliases and bindings
+   * @var  array  An assotiative array of aliases and bindings
    */
-  private $_map = [];
+  private $map = [];
   
   /**
-   * @var array   An assotiative array of aliases and bindings to be lazy-loaded as singletons
+   * @var  array  An assotiative array of aliases and bindings to be lazy-loaded as singletons
    */
-  private $_singletons = [];
+  private $singletons = [];
   
   /**
-   * @var array   An array of custom resolvers
+   * @var  array  An array of custom resolvers
    */
-  private $_resolvers = [];
+  private $resolvers = [];
   
   /**
    * Protected constructor; class cannot be instantiated.
