@@ -8,7 +8,7 @@ An efficient, easy-to-use, open-source PHP dependency injection container, boast
 ## Installation
 
 ### Composer
-[Composer](https://getcomposer.org/) is the recommended method of installation for Phi.
+[Composer](https://getcomposer.org/) is the recommended method of installation for BapCat packages.
 
 ```
 $ composer require bapcat/phi
@@ -16,7 +16,7 @@ $ composer require bapcat/phi
 
 ### GitHub
 
-Phi may be downloaded from [GitHub](https://github.com/BapCat/Phi/).
+BapCat packages may be downloaded from [GitHub](https://github.com/BapCat/Phi/).
 
 ## Features
 Phi supports several different ways to inject dependencies, which can all be used alone or in conjunction with one another.
@@ -37,7 +37,7 @@ class Foo {
 You can easily get a new instance of `Foo` with all required dependencies by doing the following:
 
 ```php
-$foo = $phi->make('Foo');
+$foo = $phi->make(Foo::class);
 // $foo->bar = new Bar
 ```
 
@@ -48,10 +48,10 @@ There will be many cases where you need to pass parameters into the constructors
 
 ```php
 class Foo {
-  public $a = null;
-  public $b = null;
-  public $first_name = null;
-  public $last_name  = null;
+  public $a;
+  public $b;
+  public $first_name;
+  public $last_name;
   
   public function __construct(B $b, A $a, $first_name = null, $last_name = null) {
     $this->a = $a;
@@ -65,7 +65,7 @@ class Foo {
 There are several ways you can request this class from Phi:
 
 ```php
-$foo = $phi->make('Foo');
+$foo = $phi->make(Foo::class);
 // $foo->a == new A
 // $foo->b == new B
 // $foo->first_name == null
@@ -73,7 +73,7 @@ $foo = $phi->make('Foo');
 ```
 
 ```php
-$foo = $phi->make('Foo', ['John', 'Doe']);
+$foo = $phi->make(Foo::class, ['John', 'Doe']);
 // $foo->a == new A
 // $foo->b == new B
 // $foo->first_name == 'John'
@@ -81,7 +81,7 @@ $foo = $phi->make('Foo', ['John', 'Doe']);
 ```
 
 ```php
-$foo = $phi->make('Foo', ['John']);
+$foo = $phi->make(Foo::class, ['John']);
 // $foo->a == new A
 // $foo->b == new B
 // $foo->first_name == 'John'
@@ -92,7 +92,7 @@ You may want to override an automatically injected parameter:
 
 ```php
 $a = new A;
-$foo = $phi->make('Foo', ['John', 'Doe', $a]);
+$foo = $phi->make(Foo::class, ['John', 'Doe', $a]);
 // $foo->a == $a
 // $foo->b == new B
 // $foo->first_name == 'John'
@@ -115,7 +115,7 @@ class Foo {
 ```php
 $bar = new Bar; // implements BarInterface
 $baz = new Baz; // implements BarInterface
-$foo = $phi->make('Foo', [$bar, $baz]);
+$foo = $phi->make(Foo::class, [$bar, $baz]);
 // $foo->bar == $bar
 // $foo->baz == $baz
 // $foo->a   == new A
@@ -138,7 +138,7 @@ class Foo {
 ```php
 $a = new A;
 $b = new B;
-$foo = $phi->make('Foo', [$b, 'last_name' => 'Doe', $a]);
+$foo = $phi->make(Foo::class, [$b, 'last_name' => 'Doe', $a]);
 // $foo->a == $a
 // $foo->b == $b
 // $foo->first_name == null
@@ -163,25 +163,25 @@ class Foo {
   }
 }
 
-$phi->bind('BarInterface', 'Bar');
+$phi->bind(BarInterface::class, Bar::class);
 ```
 
 ```php
-$foo = $phi->make('Foo');
+$foo = $phi->make(Foo::class);
 // $foo->bar == new Bar
 ```
 
 ```php
-$bar = $phi->make('BarInterface');
+$bar = $phi->make(BarInterface::class);
 // $bar = new Bar
 ```
 
 Binding even allows you to swap one concrete instance of a class for another:
 
 ```php
-$phi->bind('A', 'B');
+$phi->bind(A::class, B::class);
 
-$a = $phi->make('A');
+$a = $phi->make(A::class);
 // $a == new B
 ```
 
@@ -189,11 +189,11 @@ $a = $phi->make('A');
 Sometimes you may have a dependency that has required parameters.  This can be done by binding a class to a callable:
 
 ```php
-$phi->bind('Person', function() {
+$phi->bind(Person::class, function() {
   return new Person('John', 'Doe');
 });
 
-$person = $phi->make('Person');
+$person = $phi->make(Person::class);
 // $person->first_name == 'John'
 // $person->last_name  == 'Doe'
 ```
@@ -203,12 +203,12 @@ This is also useful if you need to perform logic when instanciating a class:
 ```php
 $id = 0;
 
-$phi->bind('Person', function() use(&$id) {
+$phi->bind(Person::class, function() use(&$id) {
   return new Person(++$id);
 });
 
-$person1 = $phi->make('Person'); // id == 1
-$person2 = $phi->make('Person'); // id == 2
+$person1 = $phi->make(Person::class); // id == 1
+$person2 = $phi->make(Person::class); // id == 2
 ```
 
 Any parameters passed to Phi will be passed directly to the callable:
@@ -216,12 +216,12 @@ Any parameters passed to Phi will be passed directly to the callable:
 ```php
 $id = 0;
 
-$phi->bind('Person', function($name, $age) use(&$id) {
+$phi->bind(Person::class, function($name, $age) use(&$id) {
   $names = explode(' ', $name);
   return new Person(++$id, $name[0], $name[1], $age);
 });
 
-$person = $phi->make('Person', ['John Doe', 21]);
+$person = $phi->make(Person::class, ['John Doe', 21]);
 // $person->id == 1
 // $person->first_name == 'John'
 // $person->last_name  == 'Doe'
@@ -235,11 +235,11 @@ Phi also allows binding to real instances of classes.  This can be used to creat
 $default_pdo = new PDO(...); // The default database
 $stats_pdo   = new PDO(...); // PDO pointing to a different database
 
-$phi->bind('PDO', $default_pdo);
+$phi->bind(PDO::class, $default_pdo);
 ```
 
 ```php
-$pdo = $phi->make('PDO');
+$pdo = $phi->make(PDO::class);
 // $pdo == $default_pdo
 ```
 
@@ -250,11 +250,11 @@ class Table {
   }
 }
 
-$users_table = $phi->make('Table', ['users']);
+$users_table = $phi->make(Table::class, ['users']);
 // $users_table->pdo   == $default_pdo
 // $users_table->table == 'users'
 
-$stats_table = $phi->make('Table', [$stats_pdo, 'stats']);
+$stats_table = $phi->make(Table::class, [$stats_pdo, 'stats']);
 // $stats_table->pdo   == $stats_pdo
 // $stats_table->table == 'stats'
 ```
@@ -263,7 +263,7 @@ $stats_table = $phi->make('Table', [$stats_pdo, 'stats']);
 Sometimes, a codebase will have very commonly used classes with difficult-to remember names. For example, `Vendor\Package\Core\Logging\Log`.  It may be useful to give such classes shorter and easier to type names:
 
 ```php
-$phi->bind('core.log', 'Vendor\Package\Core\Logging\Log');
+$phi->bind('core.log', \Vendor\Package\Core\Logging\Log::class);
 
 $log = $phi->make('core.log');
 // $log == new Vendor\Package\Core\Logging\Log
@@ -278,11 +278,11 @@ executed one by one in the order they were added, and the first one to return a 
 will be used. If all custom resolvers return null, Phi will resolve the binding normally.
 
 ```php
-use BapCat\Phi\ResolverInterface;
+use BapCat\Interfaces\Ioc\Resolver;
 
-class CustomResolver implements ResolverInterface {
+class CustomResolver implements Resolver {
   public function make($alias, array $arguments = []) {
-    if($alias == 'A') {
+    if($alias == A::class) {
       return new B(new A());
     }
   }
@@ -292,7 +292,7 @@ $phi->addResolver(new CustomResolver());
 ```
 
 ```php
-$b = $phi->make('A');
+$b = $phi->make(A::class);
 //$b == new B
 ```
 
@@ -300,9 +300,9 @@ Another reason to use custom resolvers is to wrap other IoC containers. For exam
 
 ```php
 use Illuminate\Support\Facades\App;
-use BapCat\Phi\ResolverInterface;
+use BapCat\Interfaces\Ioc\Resolver;
 
-class LaravelResolver implements ResolverInterface {
+class LaravelResolver implements Resolver {
   public function make($alias, array $arguments = []) {
     if(App::bound($alias)) {
       return App::make($alias, $arguments);
@@ -314,3 +314,36 @@ $phi->addResolver(new LaravelResolver());
 ```
 
 This way, any binding that is registered in the Laravel IoC container will be resolved by it.  The rest will be passed on to Phi.
+
+### Recursive Resolution
+It's possible to bind one binding to another.
+
+```php
+$ioc->bind(FooInterface::class, Foo::class);
+$ioc->bind('bap.foo', FooInterface::class);
+
+### Singletons
+While it's possible to bind an alias to an instance of a class, effectively creating a singleton, it's not always
+desirable (or possible) to load all singletons at boot time.  Instead, singletons can be registered and lazy-loaded.
+
+```php
+$phi->singleton(FooInterface::class, Foo::class);
+```
+
+The first time an instance of `FooInterface` is requested, `Foo` will be loaded and bound.  From then on, all
+requests for `FooInterface` will return the same instance of `Foo`.
+
+### Dependency Injection on Callables
+Not only is dependency injection useful when creating objects, it may also be useful when calling methods.  Phi can
+perform dependency injection on any method PHP will accept as a `callable` type hint.
+
+```php
+$phi->call([$instance, 'method']);
+$phi->call([Class::class, 'staticMethod']);
+$phi->call(['Class::staticMethod']);
+$phi->call($invokableClass);
+$phi->call(function(FooInterface $foo) { });
+$phi->call('var_dump', [$foo]);
+```
+
+You may pass arguments to method injections in the same way as constructor injections.
