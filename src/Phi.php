@@ -3,14 +3,25 @@
 use BapCat\Interfaces\Ioc\Ioc;
 use BapCat\Interfaces\Ioc\Resolver;
 
+use TRex\Reflection\CallableReflection;
+
 use InvalidArgumentException;
 use ReflectionClass;
-use ReflectionMethod;
+use ReflectionFunctionAbstract;
 
 /**
  * Dependency injection manager
  */
 class Phi extends Ioc {
+  /**
+   * Clears out all bindings, singletons, and resolvers
+   */
+  public function flush() {
+    $this->map        = [];
+    $this->singletons = [];
+    $this->resolvers  = [];
+  }
+  
   /**
    * Binds a class to an alias
    * 
@@ -160,6 +171,7 @@ class Phi extends Ioc {
   
   /**
    * Executes a method using dependency injection
+   * @deprecated since 1.1.1; will be removed in 2.0. Use `call` instead.
    * 
    * @param  object  $instance   An instance of an object, or a class name if calling a static method
    * @param  string  $method     The name of the method to call on the object or class
@@ -168,26 +180,38 @@ class Phi extends Ioc {
    * @return mixed   The return value of the called method
    */
   public function execute($instance, $method, array $arguments = []) {
-    $class = new ReflectionClass($instance);
-    $method = $class->getMethod($method);
+    return $this->call([$instance, $method], $arguments);
+  }
+  
+  /**
+   * Executes a callable using dependency injection
+   * 
+   * @param  callable  $call       A callable to execute using dependency injection
+   * @param  array     $arguments  The arguments to pass to the callable
+   * 
+   * @return mixed     The return value of the callable
+   */
+  public function call(callable $call, array $arguments = []) {
+    $reflector = new CallableReflection($call);
+    $method = $reflector->getReflector();
     $values = $this->buildArguments($method, $arguments);
     
-    if(!$method->isStatic()) {
-        return $method->invokeArgs($instance, $values);
+    if($reflector->isStaticMethod()) {
+      return $reflector->invokeArgsStatic($values);
     } else {
-        return $method->invokeArgs(null, $values);
+      return $reflector->invokeArgs($values);
     }
   }
   
   /**
    * Where the magic happens.  Builds the argument list for a given method and calls it.
    * 
-   * @param  ReflectionMethod  $method     The method to call
-   * @param  array<mixed>      $arguments  The arguments to pass to the the method
+   * @param  ReflectionFunctionAbstract  $method     The method to call
+   * @param  array<mixed>                $arguments  The arguments to pass to the the method
    * 
    * @return mixed  The return value of the method
    */
-  private function buildArguments(ReflectionMethod $method, array $arguments = []) {
+  private function buildArguments(ReflectionFunctionAbstract $method, array $arguments = []) {
     // Grab all of the constructor's parameters
     $parameters = $method->getParameters();
     

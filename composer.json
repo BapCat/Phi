@@ -12,7 +12,8 @@
   ],
   "require": {
     "php": ">=5.5.0",
-    "bapcat/interfaces": "^1.0"
+    "bapcat/interfaces": "^1.0",
+    "raphhh/trex-reflection": "^0.1.1"
   },
   "autoload": {
     "psr-4": {

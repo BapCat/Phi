@@ -3,6 +3,7 @@
 require_once __DIR__ . '/stubs/A.php';
 require_once __DIR__ . '/stubs/B.php';
 require_once __DIR__ . '/stubs/DoubleDependencyConstructor.php';
+require_once __DIR__ . '/stubs/Invokable.php';
 require_once __DIR__ . '/stubs/MixedConstructor.php';
 require_once __DIR__ . '/stubs/NoConstructor.php';
 require_once __DIR__ . '/stubs/ScalarConstructor.php';
@@ -15,72 +16,77 @@ require_once __DIR__ . '/stubs/Method.php';
 use BapCat\Phi\Phi;
 
 class PhiTest extends PHPUnit_Framework_TestCase {
+  public function setUp() {
+    $this->phi = Phi::instance();
+    $this->phi->flush();
+  }
+  
   public function testNoConstructor() {
-    $instance = Phi::instance()->make('NoConstructor');
+    $instance = $this->phi->make('NoConstructor');
     $this->assertInstanceOf('NoConstructor', $instance);
   }
   
   public function testAlias() {
-    Phi::instance()->bind('test', 'NoConstructor');
-    $instance = Phi::instance()->make('test');
+    $this->phi->bind('test', 'NoConstructor');
+    $instance = $this->phi->make('test');
     $this->assertInstanceOf('NoConstructor', $instance);
   }
   
   public function testClosure() {
-    Phi::instance()->bind('test', function($parameter1, $parameter2) {
+    $this->phi->bind('test', function($parameter1, $parameter2) {
       $this->assertEquals('param1', $parameter1);
       $this->assertEquals('param2', $parameter2);
       
       return new NoConstructor();
     });
     
-    $instance = Phi::instance()->make('test', ['param1', 'param2']);
+    $instance = $this->phi->make('test', ['param1', 'param2']);
     $this->assertInstanceOf('NoConstructor', $instance);
   }
   
   public function testSingleton() {
-    Phi::instance()->bind('test', new NoConstructor());
-    $instance = Phi::instance()->make('test');
+    $this->phi->bind('test', new NoConstructor());
+    $instance = $this->phi->make('test');
     $this->assertInstanceOf('NoConstructor', $instance);
   }
   
   public function testUninstantiable() {
     $this->setExpectedException('InvalidArgumentException');
     
-    $instance = Phi::instance()->make('Uninstantiable');
+    $instance = $this->phi->make('Uninstantiable');
   }
   
   public function testScalarParameters() {
-    $instance = Phi::instance()->make('ScalarConstructor', ['a', 'b']);
+    $instance = $this->phi->make('ScalarConstructor', ['a', 'b']);
     $this->assertEquals('a', $instance->getVal1());
     $this->assertEquals('b', $instance->getVal2());
   }
   
   public function testAutoInjection() {
-    $instance = Phi::instance()->make('TypedConstructor');
+    $instance = $this->phi->make('TypedConstructor');
     $this->assertInstanceOf('A', $instance->getA());
     $this->assertInstanceOf('B', $instance->getB());
     $this->assertInstanceOf('A', $instance->getB()->getA());
   }
   
   public function testAutoInjectionPartialOverride() {
-    $b = Phi::instance()->make('B');
-    $instance = Phi::instance()->make('TypedConstructor', [$b]);
+    $b = $this->phi->make('B');
+    $instance = $this->phi->make('TypedConstructor', [$b]);
     $this->assertEquals($b, $instance->getB());
   }
   
   public function testAutoInjectionFullOverride() {
-    $a = Phi::instance()->make('A');
-    $b = Phi::instance()->make('B', [$a]);
-    $instance = Phi::instance()->make('TypedConstructor', [$a, $b]);
+    $a = $this->phi->make('A');
+    $b = $this->phi->make('B', [$a]);
+    $instance = $this->phi->make('TypedConstructor', [$a, $b]);
     $this->assertEquals($a, $instance->getA());
     $this->assertEquals($b, $instance->getB());
     $this->assertEquals($a, $instance->getB()->getA());
   }
   
   public function testUnorderedInterleavedInjection() {
-    $b = Phi::instance()->make('B');
-    $instance = Phi::instance()->make('MixedConstructor', ['test1', 'test2', $b]);
+    $b = $this->phi->make('B');
+    $instance = $this->phi->make('MixedConstructor', ['test1', 'test2', $b]);
     $this->assertInstanceOf('A', $instance->getA());
     $this->assertEquals($b, $instance->getB());
     $this->assertEquals('test1', $instance->getVal1());
@@ -88,7 +94,7 @@ class PhiTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testMultipleInjectionsOfOneClass() {
-    $instance = Phi::instance()->make('DoubleDependencyConstructor');
+    $instance = $this->phi->make('DoubleDependencyConstructor');
     $this->assertInstanceOf('A', $instance->getA());
     $this->assertInstanceOf('B', $instance->getB1());
     $this->assertInstanceOf('B', $instance->getB2());
@@ -96,8 +102,8 @@ class PhiTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testMultipleInjectionsOfOneClassWithOneOverride() {
-    $b = Phi::instance()->make('B');
-    $instance = Phi::instance()->make('DoubleDependencyConstructor', [$b]);
+    $b = $this->phi->make('B');
+    $instance = $this->phi->make('DoubleDependencyConstructor', [$b]);
     $this->assertInstanceOf('A', $instance->getA());
     $this->assertInstanceOf('B', $instance->getB1());
     $this->assertInstanceOf('B', $instance->getB2());
@@ -105,8 +111,8 @@ class PhiTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testMultipleInjectionsOfOneClassWithOverrides() {
-    $b = Phi::instance()->make('B');
-    $instance = Phi::instance()->make('DoubleDependencyConstructor', [$b, $b]);
+    $b = $this->phi->make('B');
+    $instance = $this->phi->make('DoubleDependencyConstructor', [$b, $b]);
     $this->assertInstanceOf('A', $instance->getA());
     $this->assertInstanceOf('B', $instance->getB1());
     $this->assertInstanceOf('B', $instance->getB2());
@@ -114,8 +120,8 @@ class PhiTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testMultipleInjectionsOfOneClassBindings() {
-    Phi::instance()->bind('B', Phi::instance()->make('B'));
-    $instance = Phi::instance()->make('DoubleDependencyConstructor');
+    $this->phi->bind('B', $this->phi->make('B'));
+    $instance = $this->phi->make('DoubleDependencyConstructor');
     $this->assertInstanceOf('A', $instance->getA());
     $this->assertInstanceOf('B', $instance->getB1());
     $this->assertInstanceOf('B', $instance->getB2());
@@ -123,32 +129,32 @@ class PhiTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testKeyedInjection() {
-    $instance = Phi::instance()->make('MixedConstructor', ['val2' => 'test1', 'test2']);
+    $instance = $this->phi->make('MixedConstructor', ['val2' => 'test1', 'test2']);
     $this->assertEquals('test1', $instance->getVal2());
     $this->assertEquals('test2', $instance->getVal1());
   }
   
   public function testMultipleKeyedInjection() {
-    $instance = Phi::instance()->make('ScalarConstructor', ['val2' => 'test1', 'val1' => 'test2']);
+    $instance = $this->phi->make('ScalarConstructor', ['val2' => 'test1', 'val1' => 'test2']);
     $this->assertEquals('test1', $instance->getVal2());
     $this->assertEquals('test2', $instance->getVal1());
   }
   
   public function testMethodInjection() {
-    $instance = Phi::instance()->make('Method');
-    Phi::instance()->execute($instance, 'test', ['asdf']);
+    $instance = $this->phi->make('Method');
+    $this->phi->execute($instance, 'test', ['asdf']);
     $this->assertInstanceOf('A', $instance->a);
     $this->assertEquals('asdf', $instance->b);
   }
   
   public function testStaticMethodInjection() {
-    Phi::instance()->execute('Method', 'testStatic', ['asdf']);
+    $this->phi->execute('Method', 'testStatic', ['asdf']);
     $this->assertInstanceOf('A', Method::$a_static);
     $this->assertEquals('asdf', Method::$b_static);
   }
   
   public function testCustomResolver() {
-    $phi = Phi::instance();
+    $phi = $this->phi;
     $phi->addResolver(new CustomResolver());
     
     $instance = $phi->make('A');
@@ -159,7 +165,7 @@ class PhiTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testMultipleCustomResolvers() {
-    $phi = Phi::instance();
+    $phi = $this->phi;
     $phi->addResolver(new CustomResolver());
     $phi->addResolver(new CustomResolver2());
     
@@ -174,7 +180,7 @@ class PhiTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testSingletons() {
-    $phi = Phi::instance();
+    $phi = $this->phi;
     
     $phi->singleton('ThereCanBeOnlyOne', 'A');
     
@@ -189,7 +195,7 @@ class PhiTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testSingletonInjection() {
-    $phi = Phi::instance();
+    $phi = $this->phi;
     
     $phi->singleton('ScalarConstructor', 'ScalarConstructor', ['test1', 'test2']);
     
@@ -200,7 +206,7 @@ class PhiTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testClosuregleton() {
-    $phi = Phi::instance();
+    $phi = $this->phi;
     
     $doIt = false;
     $phi->singleton('closure', function($didItWork) use(&$doIt) {
@@ -217,7 +223,7 @@ class PhiTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testRecursiveResolution() {
-    $phi = Phi::instance();
+    $phi = $this->phi;
     
     $phi->singleton('NoConstructor', 'NoConstructor');
     $phi->bind('a1', 'NoConstructor');
@@ -231,7 +237,7 @@ class PhiTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testSingletonWithObject() {
-    $phi = Phi::instance();
+    $phi = $this->phi;
     
     $a1 = new NoConstructor();
     
@@ -243,11 +249,101 @@ class PhiTest extends PHPUnit_Framework_TestCase {
   }
   
   public function testResolve() {
-    $phi = Phi::instance();
+    $phi = $this->phi;
     
     $phi->bind('A1', 'A2');
     
     $this->assertEquals('A2', $phi->resolve('A1'));
     $this->assertEquals('NoBinding', $phi->resolve('NoBinding'));
+  }
+  
+  public function testCallInstanceMethod() {
+    $instance = new Method();
+    
+    $this->phi->call([$instance, 'test'], ['123']);
+    
+    $this->assertInstanceOf(A::class, $instance->a);
+    $this->assertSame('123', $instance->b);
+    
+    $a = new A();
+    
+    $this->phi->call([$instance, 'test'], [$a, '321']);
+    
+    $this->assertSame($a, $instance->a);
+    $this->assertSame('321', $instance->b);
+  }
+  
+  public function testCallStaticMethod() {
+    $this->phi->call([Method::class, 'testStatic'], ['123']);
+    
+    $this->assertInstanceOf(A::class, Method::$a_static);
+    $this->assertSame('123', Method::$b_static);
+    
+    $a = new A();
+    
+    $this->phi->call([Method::class, 'testStatic'], [$a, '321']);
+    
+    $this->assertSame($a, Method::$a_static);
+    $this->assertSame('321', Method::$b_static);
+  }
+  
+  public function testCallScapedStaticMethod() {
+    $this->phi->call('Method::testStatic', ['123']);
+    
+    $this->assertInstanceOf(A::class, Method::$a_static);
+    $this->assertSame('123', Method::$b_static);
+    
+    $a = new A();
+    
+    $this->phi->call('Method::testStatic', [$a, '321']);
+    
+    $this->assertSame($a, Method::$a_static);
+    $this->assertSame('321', Method::$b_static);
+  }
+  
+  public function testCallInvokable() {
+    $invokable = new Invokable();
+    
+    $a = $this->phi->call($invokable);
+    
+    $this->assertInstanceOf(A::class, $a);
+    
+    $original_a = new A();
+    
+    $a = $this->phi->call($invokable, [$original_a]);
+    
+    $this->assertSame($original_a, $a);
+  }
+  
+  public function testCallClosure() {
+    $a = $this->phi->call(function(A $a) {
+      return $a;
+    });
+    
+    $this->assertInstanceOf(A::class, $a);
+    
+    $original_a = new A();
+    
+    $a = $this->phi->call(function(A $a) {
+      return $a;
+    }, [$original_a]);
+    
+    $this->assertSame($original_a, $a);
+  }
+  
+  public function testCallGlobal() {
+    function doTheThing(A $a) {
+      return $a;
+    }
+    
+    $a = $this->phi->call('doTheThing');
+    
+    $this->assertInstanceOf(A::class, $a);
+    
+    $original_a = new A();
+    
+    $a = $this->phi->call('doTheThing', [$original_a]);
+    
+    $this->assertSame($original_a, $a);
   }
 }
