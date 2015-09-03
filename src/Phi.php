@@ -296,7 +296,9 @@ class Phi extends Ioc {
     foreach($parameters as $param_index => $parameter) {
       if(!array_key_exists($param_index, $values)) {
         if($parameter->getClass()) {
-          $values[$param_index] = $this->make($parameter->getClass()->getName());
+          if(!$parameter->isOptional()) {
+            $values[$param_index] = $this->make($parameter->getClass()->getName());
+          }
         } else {
           $values[$param_index] = array_shift($arguments);
         }
