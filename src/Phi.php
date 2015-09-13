@@ -300,7 +300,9 @@ class Phi extends Ioc {
             $values[$param_index] = $this->make($parameter->getClass()->getName());
           }
         } else {
-          $values[$param_index] = array_shift($arguments);
+          if(count($arguments) !== 0) {
+            $values[$param_index] = array_shift($arguments);
+          }
         }
       }
     }
