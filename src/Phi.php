@@ -326,9 +326,4 @@ class Phi extends Ioc {
    * @var  array  An array of custom resolvers
    */
   private $resolvers = [];
-  
-  /**
-   * Protected constructor; class cannot be instantiated.
-   */
-  protected function __construct() { }
 }
