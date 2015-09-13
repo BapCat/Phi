@@ -4,6 +4,7 @@
   "license": "GPLv3",
   "homepage": "http://github.com/BapCat/Phi",
   "keywords": ["IOC", "Inversion of control", "DI", "Dependency injection"],
+  "minimum-stability": "dev",
   "authors": [
     {
       "name": "Corey Frenette",
@@ -12,7 +13,7 @@
   ],
   "require": {
     "php": ">=5.5.0",
-    "bapcat/interfaces": "^1.0",
+    "bapcat/interfaces": "dev-master",
     "raphhh/trex-reflection": "^0.1.1"
   },
   "autoload": {
