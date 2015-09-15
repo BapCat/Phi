@@ -170,20 +170,6 @@ class Phi extends Ioc {
   }
   
   /**
-   * Executes a method using dependency injection
-   * @deprecated since 1.1.1; will be removed in 2.0. Use `call` instead.
-   * 
-   * @param  object  $instance   An instance of an object, or a class name if calling a static method
-   * @param  string  $method     The name of the method to call on the object or class
-   * @param  array   $arguments  The arguments to pass to the method
-   * 
-   * @return mixed   The return value of the called method
-   */
-  public function execute($instance, $method, array $arguments = []) {
-    return $this->call([$instance, $method], $arguments);
-  }
-  
-  /**
    * Executes a callable using dependency injection
    * 
    * @param  callable  $call       A callable to execute using dependency injection
