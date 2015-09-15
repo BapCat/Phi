@@ -140,19 +140,6 @@ class PhiTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals('test2', $instance->getVal1());
   }
   
-  public function testMethodInjection() {
-    $instance = $this->phi->make('Method');
-    $this->phi->execute($instance, 'test', ['asdf']);
-    $this->assertInstanceOf('A', $instance->a);
-    $this->assertEquals('asdf', $instance->b);
-  }
-  
-  public function testStaticMethodInjection() {
-    $this->phi->execute('Method', 'testStatic', ['asdf']);
-    $this->assertInstanceOf('A', Method::$a_static);
-    $this->assertEquals('asdf', Method::$b_static);
-  }
-  
   public function testCustomResolver() {
     $phi = $this->phi;
     $phi->addResolver(new CustomResolver());
