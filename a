@@ -1,0 +1,24 @@
+#!/bin/env php
+<?php require __DIR__ . '/vendor/autoload.php';
+
+use BapCat\Phi\Phi;
+
+class Issue11TestClass {
+  public function __construct(Issue11TestClassNested $test) {
+    
+  }
+}
+
+class Issue11TestClassNested {
+  public function __construct(Issue11TestClassDoubleNested $test) {
+
+  }
+}
+
+class Issue11TestClassDoubleNested {
+  public function __construct(array $test) {
+    
+  }
+}
+
+Phi::instance()->make(Issue11TestClass::class);

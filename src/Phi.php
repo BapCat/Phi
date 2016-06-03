@@ -9,6 +9,9 @@ use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionFunctionAbstract;
 
+use Error;
+use Exception;
+
 /**
  * Dependency injection manager
  */
@@ -109,7 +112,7 @@ class Phi extends Ioc {
       list($binding, $args) = $this->singletons[$alias];
       
       if(is_callable($binding)) {
-        $this->map[$alias] = call_user_func_array($binding, $args);
+        $this->map[$alias] = $binding(...$args);
       } else {
         $this->map[$alias] = $this->buildObject($binding, $args);
       }
@@ -123,7 +126,7 @@ class Phi extends Ioc {
       
       if(is_callable($binding)) {
         // If it's callable, we call it and pass on our arguments
-        return call_user_func_array($binding, $arguments);
+        return $binding(...$arguments);
       } elseif(is_object($binding)) {
         // If it's an object, simply return it
         return $binding;
@@ -135,7 +138,13 @@ class Phi extends Ioc {
       $binding = $alias;
     }
     
-    return $this->buildObject($binding, $arguments);
+    try {
+      return $this->buildObject($binding, $arguments);
+    } catch(Error $e) {
+      throw new InstantiationError($alias, $arguments, $e);
+    } catch(Exception $e) {
+      throw new InstantiationException($alias, $arguments, $e);
+    }
   }
   
   /**
@@ -160,13 +169,13 @@ class Phi extends Ioc {
     
     // If there's no constructor, it's easy.  Just make a new instance.
     if(empty($method)) {
-      return $reflector->newInstance();
+      return new $binding();
     }
     
     $values = $this->buildArguments($method, $arguments);
     
     // Done! Create a new instance using the values array
-    return $reflector->newInstanceArgs($values);
+    return new $binding(...$values);
   }
   
   /**
@@ -182,11 +191,12 @@ class Phi extends Ioc {
     $method = $reflector->getReflector();
     $values = $this->buildArguments($method, $arguments);
     
+    //TODO This is only required for PHP5...
     if($reflector->isStaticMethod()) {
       return $reflector->invokeArgsStatic($values);
-    } else {
-      return $reflector->invokeArgs($values);
     }
+    
+    return $call(...$values);
   }
   
   /**

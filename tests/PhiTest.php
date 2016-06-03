@@ -50,9 +50,10 @@ class PhiTest extends PHPUnit_Framework_TestCase {
     $this->assertInstanceOf('NoConstructor', $instance);
   }
   
+  /**
+   * @expectedException BapCat\Phi\InstantiationException
+   */
   public function testUninstantiable() {
-    $this->setExpectedException('InvalidArgumentException');
-    
     $instance = $this->phi->make('Uninstantiable');
   }
   
