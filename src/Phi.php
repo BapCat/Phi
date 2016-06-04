@@ -2,6 +2,7 @@
 
 use BapCat\Interfaces\Ioc\Ioc;
 use BapCat\Interfaces\Ioc\Resolver;
+use BapCat\Interfaces\Values\Value;
 
 use TRex\Reflection\CallableReflection;
 
@@ -288,6 +289,11 @@ class Phi extends Ioc {
     foreach($parameters as $param_index => $parameter) {
       if(!array_key_exists($param_index, $values)) {
         if($parameter->getClass()) {
+          if($parameter->getClass()->isSubclassOf(Value::class)) {
+            $values[$param_index] = $this->make($parameter->getClass()->getName(), [array_shift($arguments)]);
+            continue;
+          }
+          
           if(!$parameter->isOptional()) {
             $values[$param_index] = $this->make($parameter->getClass()->getName());
           }
