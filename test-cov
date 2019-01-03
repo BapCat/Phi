@@ -1,7 +1,0 @@
-#!/bin/bash
-
-# Execute PHPUnit and generate code coverage
-
-DIR=`dirname "$0"`
-
-$DIR/test --coverage-html $DIR/report "$@"
