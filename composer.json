@@ -1,7 +1,7 @@
 {
   "name": "bapcat/phi",
   "description": "A super-minimal inversion-of-control library",
-  "license": "GPLv3",
+  "license": "GPL-3.0-or-later",
   "homepage": "http://github.com/BapCat/Phi",
   "keywords": ["IOC", "Inversion of control", "DI", "Dependency injection"],
   "authors": [
@@ -11,13 +11,13 @@
     }
   ],
   "require": {
-    "php": ">=5.5.0",
-    "bapcat/interfaces": "^1.1",
-    "raphhh/trex-reflection": "^0.1.1"
+    "php": "^7.1",
+    "raphhh/trex-reflection": "^1.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^5.0",
-    "bapcat/values": "^0.1.4"
+    "roave/security-advisories": "dev-master",
+    "phpunit/phpunit": "^7.5",
+    "bapcat/values": "^0.2"
   },
   "autoload": {
     "psr-4": {
