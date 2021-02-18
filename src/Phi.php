@@ -3,6 +3,7 @@
 use BapCat\Values\Value;
 
 use ReflectionException;
+use ReflectionNamedType;
 use TRex\Reflection\CallableReflection;
 
 use InvalidArgumentException;
@@ -121,7 +122,7 @@ class Phi extends Ioc {
    * @param  string  $binding    The binding to instantiate
    * @param  array   $arguments  The arguments to pass to the constructor
    *
-   * @return  object  The instance that is created
+   * @return  mixed  The instance that is created
    *
    * @throws  ReflectionException
    */
@@ -165,9 +166,9 @@ class Phi extends Ioc {
    * @param  ReflectionFunctionAbstract  $method     The method to call
    * @param  mixed[]                     $arguments  The arguments to pass to the the method
    *
-   * @return  mixed  The return value of the method
+   * @return  mixed[]  The return value of the method
    */
-  private function buildArguments(ReflectionFunctionAbstract $method, array $arguments = []) {
+  private function buildArguments(ReflectionFunctionAbstract $method, array $arguments = []): array {
     $parameters = $method->getParameters();
     $values = [];
 
@@ -232,10 +233,11 @@ class Phi extends Ioc {
 
     // Step 2...
     foreach($parameters as $param_index => $parameter) {
-      if($parameter->getClass()) {
+      $type = $parameter->getType();
+      if($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
         foreach($arguments as $arg_index => $argument) {
           if(is_object($argument)) {
-            if($parameter->getClass()->isInstance($argument)) {
+            if($argument instanceof ($type->getName())) {
               $values[$param_index] = $argument;
               unset($arguments[$arg_index]);
               break;
@@ -248,14 +250,18 @@ class Phi extends Ioc {
     // Step 3...
     foreach($parameters as $param_index => $parameter) {
       if(!array_key_exists($param_index, $values)) {
-        if($parameter->getClass()) {
-          if($parameter->getClass()->isSubclassOf(Value::class)) {
-            $values[$param_index] = $this->make($parameter->getClass()->getName(), [array_shift($arguments)]);
+        $type = $parameter->getType();
+
+        if($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
+          $class = new ReflectionClass($type->getName());
+
+          if($class->isSubclassOf(Value::class)) {
+            $values[$param_index] = $this->make($type->getName(), [array_shift($arguments)]);
             continue;
           }
 
           if(!$parameter->isOptional()) {
-            $values[$param_index] = $this->make($parameter->getClass()->getName());
+            $values[$param_index] = $this->make($type->getName());
           }
         } elseif(count($arguments) !== 0) {
           $values[$param_index] = array_shift($arguments);
