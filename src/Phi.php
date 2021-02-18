@@ -237,7 +237,8 @@ class Phi extends Ioc {
       if($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
         foreach($arguments as $arg_index => $argument) {
           if(is_object($argument)) {
-            if($argument instanceof ($type->getName())) {
+            $typeName = $type->getName();
+            if($argument instanceof $typeName) {
               $values[$param_index] = $argument;
               unset($arguments[$arg_index]);
               break;
